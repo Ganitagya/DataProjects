@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='utf-8' />
+
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css' rel='stylesheet'>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css' rel='stylesheet'>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+
+            function getEventsFromAPI() {
+                return fetch('http://192.168.69.2:8080/allevents')
+                    .then(response => response.json())
+                    .then(data => {
+                        return data.EventsDBSchemaElement;  // Assuming the data key is "EventsDBSchemaElement"
+                    })
+                    .catch(error => {
+                        console.error("Error fetching events:", error);
+                        throw error; // Re-throw the error for handling in .catch below
+                    });
+            }
+
+            getEventsFromAPI()
+                .then(events => {
+                    var calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        multiMonthMaxColumns: 3,
+                        headerToolbar: {
+                            left: 'prev,today,next',
+                            center: 'title',
+                            right: 'multiMonthYear,dayGridMonth,dayGridWeek,dayGridDay'
+                        },
+                        views: {
+                            multiMonthYear: {
+                                buttonText: 'Year'
+                            },
+                            dayGridMonth: {
+                                buttonText: 'Month'
+                            },
+                            dayGridWeek: {
+                                buttonText: 'Week'
+                            },
+                            dayGridDay: {
+                                buttonText: 'Day'
+                            }
+                        },
+
+                        events: events.map(event => ({
+                            title: event.event_name,
+                            start: event.event_startDate,
+                            end: event.event_endDate,
+                            color: getColorByCategory(event.event_category)
+                        })),
+                    });
+
+                    function getColorByCategory(category) {
+                        console.log("Here")
+                        console.log(category)
+                        console.log("Here")
+                        switch (category.toLowerCase()) {
+                            case 'concerts':
+                                return 'blue';
+                            case 'arabic events':
+                                return 'orange';
+                            case 'shows':
+                                return 'green';
+                            case 'nightlife':
+                                return 'purple';
+                            default:
+                                return 'gray';
+                        }
+                    }
+
+                    calendar.render();
+                })
+                .catch(error => {
+                    console.error("Error fetching events:", error);
+                });
+        });
+    </script>
+
+    <style>
+        .container {
+            padding: 20px;
+        }
+
+        #calendar {
+            border: 1px solid rgb(179, 179, 179);
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        body {
+            /* Apply gradient background */
+            background: linear-gradient(to bottom, #fff7e6, #f5e4e8);
+            height: 150vh;
+            /* Make sure the gradient covers the full viewport height */
+            margin: 0;
+        }
+
+
+        /* The below colors and formatting  are for calendar grids*/
+        .fc-daygrid-day-frame {
+            border: 0.25px solid rgb(191, 159, 159);
+            /* Darker grid lines */
+        }
+
+        .fc-daygrid-day-top {
+            border-bottom: 0.25px solid rgb(191, 159, 159);
+            /* Darker lines between days */
+        }
+
+        .fc-day-sun,
+        .fc-day-sat {
+            border: 0.25px solid rgb(191, 159, 159);
+            /* Darker border for weekends */
+        }
+
+        .fc-col-header-cell {
+            border-bottom: 2px solid rgb(191, 159, 159);
+            /* Darker header line */
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1><u>Saudi Event Calendar</u></h1>
+                <br>
+                <hr>
+                <br>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id='calendar'></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
